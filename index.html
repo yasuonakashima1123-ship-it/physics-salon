@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>PHYSICS - Online Reservation</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --primary:#1a1a1a;
+  --accent:#c8956e;
+  --accent2:#e8b48a;
+  --bg:#f7f5f0;
+  --card:#ffffff;
+  --text:#1a1a1a;
+  --text-sub:#888;
+  --border:#e8e2d8;
+  --nav-h:64px;
+  --header-h:56px;
+  --radius:14px;
+  --shadow:0 4px 20px rgba(0,0,0,0.07);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.14);
+}
+html,body{height:100%;overflow:hidden;background:#d8d0c4;}
+body{font-family:-apple-system,'Hiragino Kana','Hiragino Sans',sans-serif;color:var(--text);font-size:15px;}
+
+.phone-frame{
+  width:390px;height:844px;
+  margin:0 auto;position:relative;
+  background:var(--bg);overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(0,0,0,0.35);
+  border-radius:44px;border:8px solid #1a1a1a;
+}
+@media(max-width:420px){
+  .phone-frame{width:100%;height:100vh;border-radius:0;border:none;}
+  html,body{background:var(--bg);}
+}
+
+.status-bar{
+  height:44px;background:var(--primary);
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 20px 8px;flex-shrink:0;
+}
+.status-time{color:#fff;font-size:15px;font-weight:600;}
+.status-icons{display:flex;gap:5px;align-items:center;color:#fff;font-size:11px;}
+
+.app-header{
+  height:var(--header-h);background:var(--primary);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;flex-shrink:0;
+}
+.header-logo{font-size:20px;font-weight:800;letter-spacing:0.22em;color:#fff;text-transform:uppercase;font-family:'American Typewriter','Courier New',Courier,monospace;
+  background:none;border:none;padding:0;margin:0;cursor:pointer;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(200,149,110,0.3);
+  min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;}
+.header-logo span{color:var(--accent);}
+.header-icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.1);border:none;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;cursor:pointer;
+}
+
+.screens{flex:1;overflow:hidden;position:relative;}
+.screen{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  background:var(--bg);
+  transition:transform 0.32s cubic-bezier(0.4,0,0.2,1),opacity 0.32s;
+  -webkit-overflow-scrolling:touch;
+}
+.screen:not(.active){transform:translateX(100%);opacity:0;pointer-events:none;}
+.screen.active{transform:translateX(0);opacity:1;}
+.screen.slide-left{transform:translateX(-28%);opacity:0;}
+
+.bottom-nav{
+  height:var(--nav-h);background:var(--primary);
+  display:flex;align-items:stretch;flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,0.08);
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;
+  cursor:pointer;border:none;background:none;padding:0;
+}
+.nav-icon{font-size:19px;transition:transform 0.2s;}
+.nav-label{font-size:10px;color:rgba(255,255,255,0.45);font-weight:500;letter-spacing:0.04em;}
+.nav-item.active .nav-icon{transform:scale(1.15);}
+.nav-item.active .nav-label{color:var(--accent);}
+
+/* HOME */
+.home-hero{
+  background:linear-gradient(155deg,#1a1a1a 0%,#2a2018 100%);
+  padding:28px 20px 30px;position:relative;overflow:hidden;
+}
+.home-hero::after{
+  content:'PHYSICS';position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+  font-size:72px;font-weight:900;letter-spacing:0.1em;color:rgba(255,255,255,0.04);
+  white-space:nowrap;pointer-events:none;
+}
+.hero-eyebrow{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;}
+.hero-title{font-size:26px;font-weight:800;color:#fff;letter-spacing:0.08em;line-height:1.2;margin-bottom:4px;font-family:'American Typewriter','Courier New',Courier,monospace;}
+.hero-addr{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.04em;margin-bottom:18px;}
+.hero-notice-box{
+  background:rgba(200,149,110,0.15);border:1px solid rgba(200,149,110,0.4);
+  border-radius:10px;padding:12px 14px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.hero-notice-box .ni{font-size:15px;flex-shrink:0;}
+.hero-notice-box p{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.65;}
+.hero-notice-box strong{color:var(--accent2);}
+
+.hours-card{
+  margin:16px 16px 0;background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;
+}
+.hours-header{background:var(--primary);padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.hours-header span{font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;text-transform:uppercase;}
+.hours-rows{padding:2px 0;}
+.hours-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);}
+.hours-row:last-child{border-bottom:none;}
+.hours-day{font-size:13px;font-weight:600;}
+.hours-time{font-size:13px;color:var(--accent);font-weight:700;}
+.hours-closed{font-size:13px;color:#e05555;font-weight:700;}
+.hours-note{background:#fdf8f4;padding:10px 14px;font-size:11px;color:var(--text-sub);line-height:1.6;border-top:1px solid var(--border);}
+
+.home-section{padding:16px 16px 0;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-sub);margin-bottom:12px;}
+
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.q-card{
+  background:var(--card);border-radius:var(--radius);padding:16px 14px;
+  box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;
+  transition:transform 0.18s,box-shadow 0.18s;
+}
+.q-card:active{transform:scale(0.97);box-shadow:none;}
+.q-card.primary{background:linear-gradient(135deg,var(--accent),#a87040);border:none;grid-column:1/-1;}
+.q-icon{font-size:24px;margin-bottom:8px;}
+.q-label{font-size:13px;font-weight:700;color:var(--text);}
+.q-card.primary .q-label{color:#fff;font-size:14px;}
+.q-sub{font-size:11px;color:var(--text-sub);margin-top:3px;}
+.q-card.primary .q-sub{color:rgba(255,255,255,0.75);}
+
+.notice-list{display:flex;flex-direction:column;gap:10px;padding-bottom:24px;}
+.notice-item{
+  background:var(--card);border-radius:var(--radius);padding:14px;
+  box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;
+  transition:transform 0.18s;
+}
+.notice-item:active{transform:scale(0.98);}
+.notice-date{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:4px;letter-spacing:0.05em;}
+.notice-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.notice-body{font-size:12px;color:var(--text-sub);line-height:1.6;}
+
+/* BOOKING */
+.booking-top{
+  background:linear-gradient(155deg,#1a1a1a,#2a2018);
+  padding:22px 20px 26px;
+}
+.booking-top h2{font-size:18px;font-weight:800;color:#fff;letter-spacing:0.12em;}
+.booking-top p{font-size:12px;color:rgba(255,255,255,0.45);margin-top:3px;}
+.steps-row{display:flex;margin-top:18px;}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;}
+.step-item::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:rgba(255,255,255,0.12);}
+.step-item:last-child::after{display:none;}
+.step-circle{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);z-index:1;transition:all 0.3s;}
+.step-label{font-size:10px;color:rgba(255,255,255,0.35);text-align:center;}
+.step-item.active .step-circle{background:var(--accent);color:#fff;box-shadow:0 0 0 4px rgba(200,149,110,0.28);}
+.step-item.active .step-label{color:var(--accent);}
+.step-item.done .step-circle{background:#5a9e5a;color:#fff;}
+.step-item.done .step-label{color:rgba(255,255,255,0.55);}
+
+.step-body{padding:18px 16px;}
+.step-section-title{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-sub);margin-bottom:12px;}
+
+/* Service */
+.service-list{display:flex;flex-direction:column;gap:8px;}
+.svc-item{
+  background:var(--card);border-radius:var(--radius);padding:14px;
+  border:2px solid var(--border);cursor:pointer;
+  display:flex;align-items:center;gap:12px;transition:all 0.18s;
+}
+.svc-item:active{transform:scale(0.98);}
+.svc-item.sel{border-color:var(--accent);background:#fdf6ef;}
+.svc-icon{width:44px;height:44px;background:#f5efe8;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.svc-info{flex:1;}
+.svc-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.svc-note{font-size:11px;color:var(--text-sub);}
+.svc-price{font-size:15px;font-weight:800;color:var(--accent);text-align:right;}
+.svc-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all 0.18s;}
+.svc-item.sel .svc-check{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* Staff cards */
+.staff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.staff-card{
+  background:var(--card);border-radius:var(--radius);padding:16px 12px;
+  border:2px solid var(--border);cursor:pointer;text-align:center;transition:all 0.18s;
+}
+.staff-card:active{transform:scale(0.97);}
+.staff-card.sel{border-color:var(--accent);background:#fdf6ef;}
+.staff-av{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,#f0e8dc,#ddd0c0);}
+.staff-nm{font-size:14px;font-weight:800;margin-bottom:3px;}
+.staff-role-tag{font-size:11px;color:var(--text-sub);}
+.staff-badge{display:inline-block;background:#fff0e8;color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:6px;}
+.staff-card.sel .staff-badge{background:var(--accent);color:#fff;}
+.warn-box{background:#fff8f3;border:1px solid #f0d5bb;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#886644;line-height:1.6;}
+
+/* Calendar */
+.cal-wrap{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px;}
+.cal-hd{background:var(--primary);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.cal-month{font-size:15px;font-weight:700;color:#fff;}
+.cal-nav{width:30px;height:30px;background:rgba(255,255,255,0.1);border:none;border-radius:7px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);padding:6px 8px 0;background:#fff;}
+.cal-wd{text-align:center;font-size:11px;font-weight:600;color:var(--text-sub);padding:3px 0;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);padding:2px 8px 10px;background:#fff;gap:2px;}
+.cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.12s;}
+.cal-d.other{color:#ccc;pointer-events:none;}
+.cal-d.dis{color:#ccc;pointer-events:none;}
+.cal-d.today{font-weight:800;color:var(--accent);}
+.cal-d:not(.other):not(.dis):hover{background:#f5ece2;}
+.cal-d.sel{background:var(--accent)!important;color:#fff!important;font-weight:800;}
+.cal-d.sun{color:#e05555;}
+.cal-d.sat{color:#5566dd;}
+.cal-d.sel.sun,.cal-d.sel.sat{color:#fff;}
+
+.time-section{margin-bottom:14px;}
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.t-slot{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all 0.18s;font-size:13px;font-weight:700;}
+.t-slot:active{transform:scale(0.95);}
+.t-slot.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.t-slot.na{background:#f2f2f2;color:#ccc;pointer-events:none;font-weight:400;}
+
+/* Confirm */
+.confirm-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
+.confirm-hd{background:var(--primary);padding:12px 16px;}
+.confirm-hd h3{font-size:13px;font-weight:700;color:#fff;letter-spacing:0.1em;}
+.cr{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);}
+.cr:last-child{border-bottom:none;}
+.cr-ic{font-size:18px;width:34px;flex-shrink:0;}
+.cr-lbl{font-size:11px;color:var(--text-sub);margin-bottom:2px;}
+.cr-val{font-size:14px;font-weight:700;}
+.rules-box{background:#fff8f3;border:1px solid #f0d5bb;border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+.rules-box h4{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+.rules-box li{font-size:12px;color:#665544;line-height:1.55;padding-left:16px;position:relative;margin-bottom:5px;}
+.rules-box li::before{content:'※';position:absolute;left:0;color:var(--accent);font-weight:700;}
+
+.btn-main{width:100%;padding:15px;background:var(--primary);color:#fff;font-size:14px;font-weight:800;letter-spacing:0.1em;border:none;border-radius:12px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-main:active{transform:scale(0.98);background:#333;}
+.btn-main.ac{background:var(--accent);}
+.btn-main.ac:active{background:#a87040;}
+.btn-main:disabled{background:#ccc;cursor:not-allowed;}
+.btn-sub{width:100%;padding:12px;background:transparent;color:var(--text);font-size:13px;font-weight:600;border:2px solid var(--border);border-radius:12px;cursor:pointer;margin-top:9px;transition:all 0.18s;}
+.btn-sub:active{background:#ede8e0;}
+
+/* Success */
+.succ-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:36px 20px;text-align:center;}
+.succ-icon{width:90px;height:90px;background:linear-gradient(135deg,var(--accent),#a87040);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:22px;box-shadow:0 10px 36px rgba(200,149,110,0.4);animation:pop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes pop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.succ-ttl{font-size:20px;font-weight:800;margin-bottom:8px;}
+.succ-sub{font-size:13px;color:var(--text-sub);line-height:1.7;max-width:270px;}
+.succ-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:18px;margin:22px 0;width:100%;text-align:left;}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.sr:last-child{border-bottom:none;}
+.sr-lbl{font-size:12px;color:var(--text-sub);}
+.sr-val{font-size:13px;font-weight:800;}
+
+/* MENU SCREEN */
+.page-top{background:var(--primary);padding:18px 18px 22px;}
+.page-top h2{font-size:18px;font-weight:800;color:#fff;letter-spacing:0.15em;}
+.page-top p{font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;}
+.page-body{padding:14px 16px 28px;}
+.menu-note{background:#fff8f3;border:1px solid #f0d5bb;border-radius:10px;padding:10px 14px;font-size:12px;color:#886644;margin-bottom:16px;font-weight:600;}
+.menu-sec{margin-bottom:20px;}
+.menu-sec-title{font-size:12px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);padding-bottom:8px;border-bottom:2px solid var(--accent);margin-bottom:10px;}
+.menu-sec-note{font-size:11px;color:var(--text-sub);margin-bottom:8px;}
+.menu-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
+.menu-row:last-child{border-bottom:none;}
+.menu-name{font-size:13px;font-weight:500;}
+.menu-price{font-size:14px;font-weight:800;color:var(--accent);}
+
+/* STAFF SCREEN */
+.staff-list{display:flex;flex-direction:column;gap:14px;}
+.staff-lc{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;gap:14px;cursor:pointer;transition:transform 0.18s;}
+.staff-lc:active{transform:scale(0.98);}
+.staff-lc-av{width:64px;height:64px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;background:linear-gradient(135deg,#f0e8dc,#ddd0c0);}
+.staff-lc-info{flex:1;}
+.staff-lc-nm{font-size:16px;font-weight:800;margin-bottom:3px;}
+.staff-lc-role{font-size:12px;color:var(--accent);font-weight:700;margin-bottom:5px;}
+.staff-lc-desc{font-size:12px;color:var(--text-sub);line-height:1.6;}
+
+/* ACCESS SCREEN */
+.access-map{background:linear-gradient(135deg,#d0e0cc,#b8c8b4);height:200px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+.access-map-pin{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:white;padding:8px 16px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.15);}
+.access-info{padding:16px;}
+.access-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
+.access-card-hd{background:var(--primary);padding:10px 14px;}
+.access-card-hd span{font-size:12px;font-weight:700;color:#fff;letter-spacing:0.1em;text-transform:uppercase;}
+.access-rows{padding:2px 0;}
+.access-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);}
+.access-row:last-child{border-bottom:none;}
+.access-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.access-content{}
+.access-label{font-size:11px;color:var(--text-sub);margin-bottom:3px;}
+.access-val{font-size:13px;font-weight:600;line-height:1.5;}
+.access-val span{display:block;}
+.hours-table{width:100%;border-collapse:collapse;}
+.hours-table tr td{padding:8px 14px;font-size:13px;border-bottom:1px solid var(--border);}
+.hours-table tr:last-child td{border-bottom:none;}
+.hours-table .td-day{font-weight:600;color:var(--text-sub);width:55%;}
+.hours-table .td-time{font-weight:800;color:var(--accent);}
+.hours-table .td-closed{font-weight:800;color:#e05555;}
+.hours-note-box{background:#f8f4ee;border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-sub);line-height:1.7;margin-top:12px;}
+
+/* NOTICE SCREEN */
+.notice-full-list{display:flex;flex-direction:column;gap:12px;}
+.nf-item{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.nf-date{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:5px;}
+.nf-title{font-size:15px;font-weight:800;margin-bottom:8px;}
+.nf-body{font-size:13px;color:var(--text-sub);line-height:1.7;}
+
+.tag{display:inline-block;background:#f0ece6;color:var(--text-sub);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;margin:2px 2px 0 0;}
+.tag.ac{background:#fff0e8;color:var(--accent);}
+.divider{height:8px;background:#f0ece6;margin:0 -16px;}
+
+/* Loading overlay */
+.loading-overlay{position:absolute;inset:0;background:rgba(255,255,255,0.85);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;border-radius:var(--radius);}
+.loading-overlay.show{display:flex;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay p{font-size:12px;color:var(--text-sub);font-weight:600;}
+
+/* API setup banner */
+.api-setup-banner{background:linear-gradient(135deg,#fff0e8,#fde8d4);border:1.5px solid var(--accent);border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+.api-setup-banner h4{font-size:13px;font-weight:800;color:var(--accent);margin-bottom:6px;}
+.api-setup-banner p{font-size:12px;color:#665544;line-height:1.6;}
+.api-url-input{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:9px;font-size:12px;font-family:inherit;outline:none;margin-top:8px;transition:border-color 0.2s;}
+.api-url-input:focus{border-color:var(--accent);}
+.api-url-save-btn{width:100%;padding:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:800;border:none;border-radius:9px;margin-top:6px;cursor:pointer;}
+
+/* Booking list (admin) */
+.booking-list{display:flex;flex-direction:column;gap:10px;}
+.bk-item{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px;box-shadow:var(--shadow);}
+.bk-item-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.bk-id{font-size:11px;font-weight:700;color:var(--accent);}
+.bk-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#d4edda;color:#2d6a4f;}
+.bk-rows{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.bk-row{display:flex;gap:8px;font-size:12px;}
+.bk-label{color:var(--text-sub);min-width:52px;flex-shrink:0;}
+.bk-val{font-weight:600;}
+.bk-cancel-btn{width:100%;padding:8px;background:#fee;border:1px solid #f5c6cb;border-radius:8px;font-size:12px;font-weight:700;color:#e05555;cursor:pointer;transition:all 0.15s;}
+.bk-cancel-btn:active{background:#e05555;color:#fff;}
+
+/* ===== ADMIN ===== */
+.admin-modal{
+  position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;
+}
+.admin-modal.open{display:flex;}
+.admin-pin-box{
+  background:#fff;border-radius:20px;padding:32px 28px;width:300px;text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.admin-pin-logo{font-size:13px;font-weight:800;letter-spacing:0.2em;color:var(--primary);margin-bottom:6px;font-family:'American Typewriter','Courier New',Courier,monospace;}
+.admin-pin-logo span{color:var(--accent);}
+.admin-pin-title{font-size:16px;font-weight:700;margin-bottom:4px;}
+.admin-pin-sub{font-size:12px;color:var(--text-sub);margin-bottom:20px;}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:24px;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:all 0.2s;}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);}
+.pin-dot.error{background:#e05555;border-color:#e05555;}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pin-btn{
+  height:54px;border-radius:12px;border:none;background:#f5f0ea;
+  font-size:18px;font-weight:700;cursor:pointer;transition:all 0.15s;
+}
+.pin-btn:active{background:var(--accent);color:#fff;transform:scale(0.94);}
+.pin-btn.del{background:#fee;color:#e05555;font-size:20px;}
+.pin-btn.del:active{background:#e05555;color:#fff;}
+
+.admin-screen{
+  position:absolute;inset:0;background:#f0ece6;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:none;z-index:8000;
+}
+.admin-screen.open{display:block;}
+.admin-hd{
+  background:var(--primary);padding:50px 18px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.admin-hd h2{font-size:17px;font-weight:800;color:#fff;letter-spacing:0.08em;}
+.admin-close-btn{
+  width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.12);
+  border:none;color:#fff;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.admin-body{padding:16px;}
+.admin-section{margin-bottom:20px;}
+.admin-section-title{font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-sub);margin-bottom:10px;}
+
+.admin-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;}
+.admin-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);gap:12px;cursor:pointer;transition:background 0.15s;}
+.admin-row:last-child{border-bottom:none;}
+.admin-row:active{background:#f5f0ea;}
+.admin-row-icon{font-size:20px;width:36px;flex-shrink:0;}
+.admin-row-body{flex:1;}
+.admin-row-title{font-size:14px;font-weight:700;}
+.admin-row-sub{font-size:12px;color:var(--text-sub);margin-top:2px;}
+.admin-row-arrow{color:var(--text-sub);font-size:16px;}
+
+/* Toggle switch */
+.toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;}
+.toggle-info{flex:1;}
+.toggle-label{font-size:14px;font-weight:700;}
+.toggle-desc{font-size:12px;color:var(--text-sub);margin-top:2px;}
+.toggle-sw{position:relative;width:50px;height:28px;flex-shrink:0;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:28px;cursor:pointer;transition:all 0.3s;}
+.toggle-slider::before{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:all 0.3s;box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+.toggle-sw input:checked+.toggle-slider{background:var(--accent);}
+.toggle-sw input:checked+.toggle-slider::before{transform:translateX(22px);}
+
+/* Notice editor */
+.notice-edit-item{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:10px;position:relative;}
+.notice-edit-date{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:4px;}
+.notice-edit-title{font-size:14px;font-weight:800;margin-bottom:3px;}
+.notice-edit-body{font-size:12px;color:var(--text-sub);line-height:1.5;}
+.notice-edit-actions{display:flex;gap:8px;margin-top:10px;}
+.btn-edit{flex:1;padding:8px;background:#f0ece6;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;}
+.btn-edit:active{background:var(--accent);color:#fff;}
+.btn-del{flex:1;padding:8px;background:#fee;border:none;border-radius:8px;font-size:12px;font-weight:700;color:#e05555;cursor:pointer;transition:background 0.15s;}
+.btn-del:active{background:#e05555;color:#fff;}
+
+/* Form elements */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:6px;letter-spacing:0.05em;}
+.form-input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:#fff;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--accent);}
+.form-textarea{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:#fff;resize:none;height:90px;transition:border-color 0.2s;}
+.form-textarea:focus{border-color:var(--accent);}
+
+.btn-save{width:100%;padding:14px;background:var(--accent);color:#fff;font-size:14px;font-weight:800;border:none;border-radius:12px;cursor:pointer;transition:all 0.18s;margin-top:4px;}
+.btn-save:active{background:#a87040;transform:scale(0.98);}
+.btn-cancel-form{width:100%;padding:12px;background:transparent;color:var(--text);font-size:13px;font-weight:600;border:2px solid var(--border);border-radius:12px;cursor:pointer;margin-top:8px;}
+
+/* Admin booking toggle banner */
+.booking-closed-banner{
+  background:#1a1a1a;color:#fff;padding:14px 16px;
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;border-radius:var(--radius);
+  display:none;
+}
+.booking-closed-banner.show{display:flex;}
+
+/* Admin badge on logo tap */
+.logo-tap-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(200,149,110,0.9);color:#fff;font-size:11px;font-weight:700;
+  padding:4px 12px;border-radius:20px;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.logo-tap-hint.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="status-time">15:30</span>
+    <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+  </div>
+
+  <!-- Header -->
+  <div class="app-header">
+    <button class="header-icon-btn" id="backBtn" onclick="goBack()" style="visibility:hidden">‹</button>
+    <div style="position:relative;">
+      <button class="header-logo" id="adminLogoTap" type="button">PH<span>Y</span>SICS</button>
+      <div class="logo-tap-hint" id="logoTapHint"></div>
+    </div>
+    <button class="header-icon-btn" onclick="showScreen('home')">🏠</button>
+  </div>
+
+  <div class="screens">
+
+    <!-- ===== HOME ===== -->
+    <div class="screen active" id="screen-home">
+      <div class="home-hero">
+        <p class="hero-eyebrow">BEAUTY SALON · OSAKA</p>
+        <h1 class="hero-title">PHYSICS</h1>
+        <p class="hero-addr">大阪市福島区海老江2-4-16 ブールトウジュール梅田ウエスト1F</p>
+
+      </div>
+
+      <div class="hours-card">
+        <div class="hours-header"><span>🕐 OPEN &amp; CLOSE</span></div>
+        <div class="hours-rows">
+          <div class="hours-row"><span class="hours-day">平日</span><span class="hours-time">10:30 〜 20:30</span></div>
+          <div class="hours-row"><span class="hours-day">土・日・祝</span><span class="hours-time">10:00 〜 20:00</span></div>
+          <div class="hours-row"><span class="hours-day">毎週月曜日（祝日含む）</span><span class="hours-closed">定休日</span></div>
+        </div>
+        <div class="hours-note">受付時間：カット60分前・パーマorカラー120分前・ストレート150分前</div>
+      </div>
+
+      <div class="home-section" style="margin-top:16px;">
+        <p class="section-label">Quick Access</p>
+        <div class="quick-grid">
+          <div class="q-card primary" onclick="window.open('https://www.fhysics.com/book-online','_blank')">
+            <div class="q-icon">📅</div>
+            <div class="q-label">ONLINE RESERVATION</div>
+            <div class="q-sub">タップしてWix予約ページへ →</div>
+          </div>
+          <div class="q-card" onclick="showScreen('menu')">
+            <div class="q-icon">✂️</div>
+            <div class="q-label">メニュー</div>
+            <div class="q-sub">料金一覧</div>
+          </div>
+          <div class="q-card" onclick="showScreen('staff')">
+            <div class="q-icon">👤</div>
+            <div class="q-label">スタッフ</div>
+            <div class="q-sub">担当者紹介</div>
+          </div>
+          <div class="q-card" onclick="showScreen('access')">
+            <div class="q-icon">📍</div>
+            <div class="q-label">アクセス</div>
+            <div class="q-sub">地図・営業時間</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-section">
+        <p class="section-label">Notice</p>
+        <div class="notice-list">
+          <div class="notice-item" onclick="showScreen('notice')">
+            <div class="notice-date">2026.04</div>
+            <div class="notice-title">お休みのお知らせ</div>
+            <div class="notice-body">7月6日〜9日木曜まで、中島は、夏休みをいただきます。よろしくお願いします。</div>
+          </div>
+          <div class="notice-item" onclick="showScreen('notice')">
+            <div class="notice-date">2026.01.26</div>
+            <div class="notice-title">テレビに映りました。</div>
+            <div class="notice-body">2026年1月26日テレビに映りました。ありがとうございます。</div>
+          </div>
+          <div class="notice-item" onclick="showScreen('notice')">
+            <div class="notice-date">2025.07</div>
+            <div class="notice-title">おやすみのお知らせ</div>
+            <div class="notice-body">7/20（火）、9/19〜10/25（土）、中島はお休みをいただきます。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BOOKING ===== -->
+    <div class="screen" id="screen-booking">
+      <div class="booking-top">
+        <h2>ONLINE RESERVATION</h2>
+        <p>オンライン予約</p>
+        <div class="steps-row" id="stepsRow">
+          <div class="step-item active" data-step="1"><div class="step-circle">1</div><span class="step-label">サービス</span></div>
+          <div class="step-item" data-step="2"><div class="step-circle">2</div><span class="step-label">担当者</span></div>
+          <div class="step-item" data-step="3"><div class="step-circle">3</div><span class="step-label">日時</span></div>
+          <div class="step-item" data-step="4"><div class="step-circle">4</div><span class="step-label">確認</span></div>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="step-body" id="step1">
+        <p class="step-section-title">サービスを選択</p>
+        <div class="service-list">
+          <div class="svc-item" onclick="selectService(this,'スタンダードカット','¥5,280','60分')">
+            <div class="svc-icon">✂️</div>
+            <div class="svc-info"><div class="svc-name">スタンダードカット</div><div class="svc-note">シャンプー・スタイリング込み｜60分</div></div>
+            <div class="svc-price">¥5,280</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'メンズカット','¥4,730','60分')">
+            <div class="svc-icon">💈</div>
+            <div class="svc-info"><div class="svc-name">メンズカット</div><div class="svc-note">シャンプー・スタイリング込み｜60分</div></div>
+            <div class="svc-price">¥4,730</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'カラー','¥6,600〜','120分')">
+            <div class="svc-icon">🎨</div>
+            <div class="svc-info"><div class="svc-name">カラー</div><div class="svc-note">シャンプー・スタイリング別｜120分〜</div></div>
+            <div class="svc-price">¥6,600〜</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'パーマ','¥4,950〜','120分')">
+            <div class="svc-icon">🌀</div>
+            <div class="svc-info"><div class="svc-name">パーマ</div><div class="svc-note">シャンプー・スタイリング別｜120分〜</div></div>
+            <div class="svc-price">¥4,950〜</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'トリートメント','¥3,300〜','45分')">
+            <div class="svc-icon">✨</div>
+            <div class="svc-info"><div class="svc-name">トリートメント</div><div class="svc-note">シャンプー・スタイリング別｜45分〜</div></div>
+            <div class="svc-price">¥3,300〜</div><div class="svc-check">✓</div>
+          </div>
+        </div>
+        <p class="step-section-title" style="margin-top:16px;">セットメニュー</p>
+        <div class="service-list">
+          <div class="svc-item" onclick="selectService(this,'カットカラー','¥10,780〜','150分')">
+            <div class="svc-icon">✂️🎨</div>
+            <div class="svc-info"><div class="svc-name">カットカラー</div><div class="svc-note">カット＋カラー｜150分〜</div></div>
+            <div class="svc-price">¥10,780〜</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'カットパーマ','¥9,680〜','150分')">
+            <div class="svc-icon">✂️🌀</div>
+            <div class="svc-info"><div class="svc-name">カットパーマ</div><div class="svc-note">カット＋パーマ｜150分〜</div></div>
+            <div class="svc-price">¥9,680〜</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'カット＋トリートメント','¥8,030〜','90分')">
+            <div class="svc-icon">✂️✨</div>
+            <div class="svc-info"><div class="svc-name">カット＋トリートメント</div><div class="svc-note">カット＋トリートメント｜90分〜</div></div>
+            <div class="svc-price">¥8,030〜</div><div class="svc-check">✓</div>
+          </div>
+          <div class="svc-item" onclick="selectService(this,'カラー＋トリートメント','¥9,900〜','150分')">
+            <div class="svc-icon">🎨✨</div>
+            <div class="svc-info"><div class="svc-name">カラー＋トリートメント</div><div class="svc-note">カラー＋トリートメント｜150分〜</div></div>
+            <div class="svc-price">¥9,900〜</div><div class="svc-check">✓</div>
+          </div>
+        </div>
+        <br/>
+        <button class="btn-main ac" id="toStep2Btn" disabled onclick="goToStep(2)">次へ：担当者を選ぶ →</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-body" id="step2" style="display:none">
+        <p class="step-section-title">担当者を指名</p>
+        <div class="warn-box">⚠️ 担当者の指名チェック間違えないようにお願いします</div>
+        <div class="staff-grid">
+          <div class="staff-card" onclick="selectStaff(this,'中島 康生','スタイリスト')">
+            <div class="staff-av">👨</div>
+            <div class="staff-nm">中島 康生</div>
+            <div class="staff-role-tag">スタイリスト</div>
+            <span class="staff-badge">カット・カラー</span>
+          </div>
+          <div class="staff-card" onclick="selectStaff(this,'川戸 順子','スタイリスト')">
+            <div class="staff-av">👩</div>
+            <div class="staff-nm">川戸 順子</div>
+            <div class="staff-role-tag">スタイリスト</div>
+            <span class="staff-badge">パーマ・カラー</span>
+          </div>
+          <div class="staff-card" onclick="selectStaff(this,'おまかせ','どなたでも可')">
+            <div class="staff-av">⭐</div>
+            <div class="staff-nm">おまかせ</div>
+            <div class="staff-role-tag">どなたでも可</div>
+            <span class="staff-badge">空きあり</span>
+          </div>
+        </div>
+        <br/>
+        <button class="btn-main ac" id="toStep3Btn" disabled onclick="goToStep(3)">次へ：日時を選ぶ →</button>
+        <button class="btn-sub" onclick="goToStep(1)">‹ 戻る</button>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-body" id="step3" style="display:none">
+        <p class="step-section-title">日時を選択</p>
+        <div class="warn-box">受付は<strong>最短2日前〜最長2ヶ月先</strong>になります</div>
+        <div class="cal-wrap">
+          <div class="cal-hd">
+            <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+            <span class="cal-month" id="calMonth"></span>
+            <button class="cal-nav" onclick="changeMonth(1)">›</button>
+          </div>
+          <div class="cal-wdays">
+            <div class="cal-wd" style="color:#e05555">日</div>
+            <div class="cal-wd">月</div><div class="cal-wd">火</div>
+            <div class="cal-wd">水</div><div class="cal-wd">木</div>
+            <div class="cal-wd">金</div>
+            <div class="cal-wd" style="color:#5566dd">土</div>
+          </div>
+          <div class="cal-days" id="calDays"></div>
+        </div>
+        <div class="time-section" id="timeSection" style="display:none">
+          <p class="step-section-title">時間を選択</p>
+          <div class="time-grid" id="timeGrid"></div>
+        </div>
+        <br/>
+        <button class="btn-main ac" id="toStep4Btn" disabled onclick="goToStep(4)">次へ：内容を確認 →</button>
+        <button class="btn-sub" onclick="goToStep(2)">‹ 戻る</button>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-body" id="step4" style="display:none;position:relative;">
+        <div class="loading-overlay" id="step4Loading"><div class="spinner"></div><p>予約を送信中...</p></div>
+        <p class="step-section-title">お客様情報の入力</p>
+        <div class="confirm-card">
+          <div class="confirm-hd"><h3>📋 予約詳細</h3></div>
+          <div class="cr"><div class="cr-ic">✂️</div><div><div class="cr-lbl">サービス</div><div class="cr-val" id="confSvc">—</div></div></div>
+          <div class="cr"><div class="cr-ic">👤</div><div><div class="cr-lbl">担当者</div><div class="cr-val" id="confStaff">—</div></div></div>
+          <div class="cr"><div class="cr-ic">📅</div><div><div class="cr-lbl">日時</div><div class="cr-val" id="confDate">—</div></div></div>
+          <div class="cr"><div class="cr-ic">💴</div><div><div class="cr-lbl">料金（税込）</div><div class="cr-val" id="confPrice">—</div></div></div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">お名前 <span style="color:#e05555">*</span></div>
+          <input class="form-input" type="text" id="custName" placeholder="例：山田 花子"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">電話番号 <span style="color:#e05555">*</span></div>
+          <input class="form-input" type="tel" id="custPhone" placeholder="例：090-1234-5678" inputmode="tel"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">備考（任意）</div>
+          <textarea class="form-textarea" id="custNote" placeholder="ご要望があればご記入ください" style="height:70px;"></textarea>
+        </div>
+        <div class="rules-box">
+          <h4>⚠️ ご予約の注意事項</h4>
+          <ul>
+            <li>PHYSICSに一度来店されたお客様のみとなります</li>
+            <li>確認できないお客様は予約を削除いたします</li>
+            <li>ご新規のお客様はお問い合わせページよりお願いします</li>
+            <li>受付は最短2日前、最長2ヶ月先になります</li>
+            <li>期間外の方は電話またはメールでお問い合わせください</li>
+          </ul>
+        </div>
+        <button class="btn-main ac" onclick="confirmBooking()">✓ この内容で予約する</button>
+        <button class="btn-sub" onclick="goToStep(3)">‹ 戻る</button>
+      </div>
+    </div>
+
+    <!-- ===== SUCCESS ===== -->
+    <div class="screen" id="screen-success">
+      <div class="succ-wrap">
+        <div class="succ-icon">✓</div>
+        <h2 class="succ-ttl">予約が完了しました！</h2>
+        <p class="succ-sub">ご予約ありがとうございます。確認のご連絡をお待ちください。<br>Tel: 080-9197-7625</p>
+        <div class="succ-card">
+          <div class="sr"><span class="sr-lbl">サービス</span><span class="sr-val" id="succSvc">—</span></div>
+          <div class="sr"><span class="sr-lbl">担当者</span><span class="sr-val" id="succStaff">—</span></div>
+          <div class="sr"><span class="sr-lbl">日時</span><span class="sr-val" id="succDate">—</span></div>
+          <div class="sr"><span class="sr-lbl">予約番号</span><span class="sr-val" id="succId" style="color:var(--accent)">—</span></div>
+        </div>
+        <button class="btn-main" onclick="resetBooking()">トップに戻る</button>
+      </div>
+    </div>
+
+    <!-- ===== MENU ===== -->
+    <div class="screen" id="screen-menu">
+      <div class="page-top"><h2>MENU</h2><p>メニュー・料金案内</p></div>
+      <div class="page-body">
+        <div class="menu-note">※メニューはすべて税込価格です。</div>
+        <div id="menuBody"></div>
+      </div>
+    </div>
+
+    <!-- ===== STAFF ===== -->
+    <div class="screen" id="screen-staff">
+      <div class="page-top"><h2>STAFF</h2><p>スタイリスト紹介</p></div>
+      <div class="page-body">
+        <div class="staff-list">
+          <div class="staff-lc" onclick="showScreen('booking');setTimeout(()=>goToStep(2),300)">
+            <div class="staff-lc-av">👨</div>
+            <div class="staff-lc-info">
+              <div class="staff-lc-nm">中島 康生</div>
+              <div class="staff-lc-role">スタイリスト</div>
+              <div class="staff-lc-desc">丁寧な、接客と仕事を心がけます。よろしくお願いします。</div>
+              <span class="tag ac">カット</span><span class="tag ac">カラー</span><span class="tag">パーマ</span>
+            </div>
+          </div>
+          <div class="staff-lc" onclick="showScreen('booking');setTimeout(()=>goToStep(2),300)">
+            <div class="staff-lc-av">👩</div>
+            <div class="staff-lc-info">
+              <div class="staff-lc-nm">川戸 順子</div>
+              <div class="staff-lc-role">スタイリスト</div>
+              <div class="staff-lc-desc">新しく、入りました。よろしくお願いします。</div>
+              <span class="tag ac">パーマ</span><span class="tag ac">カラー</span><span class="tag">カット</span>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px;background:#fff8f3;border:1px solid #f0d5bb;border-radius:12px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;">📞 お問い合わせ</div>
+          <div style="font-size:13px;color:var(--text-sub);line-height:1.7;">
+            Tel: <strong style="color:var(--text)">080-9197-7625</strong>（お客様専用）<br>
+            メールでのご予約も承っております。<br>
+            <a href="http://www.fhysics.com" style="color:var(--accent)">www.fhysics.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACCESS ===== -->
+    <div class="screen" id="screen-access">
+      <div class="page-top"><h2>ACCESS</h2><p>アクセス・営業時間</p></div>
+      <div class="access-map">
+        🗺️
+        <div class="access-map-pin">📍 PHYSICS</div>
+      </div>
+      <div class="access-info">
+        <div class="access-card">
+          <div class="access-card-hd"><span>📍 所在地</span></div>
+          <div class="access-rows">
+            <div class="access-row">
+              <span class="access-icon">🏢</span>
+              <div class="access-content">
+                <div class="access-label">住所</div>
+                <div class="access-val">
+                  <span>〒553-0001</span>
+                  <span>大阪市福島区海老江2-4-16</span>
+                  <span>ブールトウジュール梅田ウエスト1F</span>
+                </div>
+              </div>
+            </div>
+            <div class="access-row">
+              <span class="access-icon">📞</span>
+              <div class="access-content">
+                <div class="access-label">電話番号（お客様専用）</div>
+                <div class="access-val" style="color:var(--accent);font-size:16px;">080-9197-7625</div>
+              </div>
+            </div>
+            <div class="access-row">
+              <span class="access-icon">🌐</span>
+              <div class="access-content">
+                <div class="access-label">ウェブサイト</div>
+                <div class="access-val"><a href="http://www.fhysics.com" style="color:var(--accent);">www.fhysics.com</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="access-card">
+          <div class="access-card-hd"><span>🕐 営業時間</span></div>
+          <div class="access-rows">
+            <table class="hours-table">
+              <tr><td class="td-day">平日</td><td class="td-time">10:30 〜 20:30</td></tr>
+              <tr><td class="td-day">土・日・祝</td><td class="td-time">10:00 〜 20:00</td></tr>
+              <tr><td class="td-day">毎週月曜（祝日含む）</td><td class="td-closed">定休日</td></tr>
+            </table>
+          </div>
+          <div class="hours-note-box">
+            受付時間：カット60分前・パーマorカラー120分前・ストレート150分前<br>
+            ※予約優先制
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NOTICE ===== -->
+    <div class="screen" id="screen-notice">
+      <div class="page-top"><h2>NOTICE</h2><p>お知らせ</p></div>
+      <div class="page-body">
+        <div class="notice-full-list">
+          <div class="nf-item">
+            <div class="nf-date">2026年4月</div>
+            <div class="nf-title">お休みのお知らせ</div>
+            <div class="nf-body">7月6日〜9日木曜まで、中島は、夏休みをいただきます。よろしくお願いします。</div>
+          </div>
+          <div class="nf-item">
+            <div class="nf-date">2026年1月26日</div>
+            <div class="nf-title">テレビに映りました。</div>
+            <div class="nf-body">2026年1月26日テレビに映りました。ありがとうございます。</div>
+          </div>
+          <div class="nf-item">
+            <div class="nf-date">2025年7月</div>
+            <div class="nf-title">おやすみのお知らせ</div>
+            <div class="nf-body">7/20（火）、9/19〜10/25（土）、中島はお休みをいただきます。<br>10/18（土）は、淀川花火のためお休みをいただきます。よろしくお願いします。</div>
+          </div>
+          <div class="nf-item">
+            <div class="nf-date">2026年7月1日より</div>
+            <div class="nf-title">オンライン予約開始予定</div>
+            <div class="nf-body">オンライン予約は2026年7月1日より開始予定です。現在テスト中のため予約はできません。ご予約はお電話またはメールにてお問い合わせください。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- ===== ADMIN PIN MODAL ===== -->
+  <div class="admin-modal" id="adminModal">
+    <div class="admin-pin-box">
+      <div class="admin-pin-logo">PH<span>Y</span>SICS</div>
+      <div class="admin-pin-title">管理者ログイン</div>
+      <div class="admin-pin-sub">PINコードを入力してください</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-btn" onclick="pinInput('1')">1</button>
+        <button class="pin-btn" onclick="pinInput('2')">2</button>
+        <button class="pin-btn" onclick="pinInput('3')">3</button>
+        <button class="pin-btn" onclick="pinInput('4')">4</button>
+        <button class="pin-btn" onclick="pinInput('5')">5</button>
+        <button class="pin-btn" onclick="pinInput('6')">6</button>
+        <button class="pin-btn" onclick="pinInput('7')">7</button>
+        <button class="pin-btn" onclick="pinInput('8')">8</button>
+        <button class="pin-btn" onclick="pinInput('9')">9</button>
+        <button class="pin-btn" onclick="closeAdminModal()" style="font-size:13px;color:#888;">閉じる</button>
+        <button class="pin-btn" onclick="pinInput('0')">0</button>
+        <button class="pin-btn del" onclick="pinDelete()">⌫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN MAIN SCREEN ===== -->
+  <div class="admin-screen" id="adminMain">
+    <div class="admin-hd">
+      <h2>⚙️ 管理パネル</h2>
+      <button class="admin-close-btn" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="admin-body">
+
+      <div class="admin-section">
+        <div class="admin-section-title">予約受付</div>
+        <div class="admin-card">
+          <div class="toggle-wrap">
+            <div class="toggle-info">
+              <div class="toggle-label">オンライン予約受付</div>
+              <div class="toggle-desc" id="bookingToggleDesc">現在：受付停止中</div>
+            </div>
+            <label class="toggle-sw">
+              <input type="checkbox" id="bookingToggle" onchange="toggleBooking()"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">スタッフ管理</div>
+        <div class="admin-card">
+          <div class="toggle-wrap" style="border-bottom:1px solid var(--border);">
+            <div class="toggle-info">
+              <div class="toggle-label">👨 中島 康生</div>
+              <div class="toggle-desc" id="staff1Desc">予約受付中</div>
+            </div>
+            <label class="toggle-sw">
+              <input type="checkbox" id="staff1Toggle" checked onchange="toggleStaff(1)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-wrap">
+            <div class="toggle-info">
+              <div class="toggle-label">👩 川戸 順子</div>
+              <div class="toggle-desc" id="staff2Desc">予約受付中</div>
+            </div>
+            <label class="toggle-sw">
+              <input type="checkbox" id="staff2Toggle" checked onchange="toggleStaff(2)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">予約管理</div>
+        <div class="admin-card">
+          <div class="admin-row" onclick="openAdminBookings()">
+            <div class="admin-row-icon">📋</div>
+            <div class="admin-row-body">
+              <div class="admin-row-title">予約一覧</div>
+              <div class="admin-row-sub">確認・キャンセル対応</div>
+            </div>
+            <span class="admin-row-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">お知らせ管理</div>
+        <div class="admin-card" style="overflow:visible;">
+          <div class="admin-row" onclick="openAdminNotice()">
+            <div class="admin-row-icon">📢</div>
+            <div class="admin-row-body">
+              <div class="admin-row-title">お知らせを編集</div>
+              <div class="admin-row-sub">追加・編集・削除</div>
+            </div>
+            <span class="admin-row-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">メニュー管理</div>
+        <div class="admin-card">
+          <div class="admin-row" onclick="openAdminMenu()">
+            <div class="admin-row-icon">✂️</div>
+            <div class="admin-row-body">
+              <div class="admin-row-title">メニュー・料金を編集</div>
+              <div class="admin-row-sub">追加・編集・削除・並べ替え</div>
+            </div>
+            <span class="admin-row-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Google Sheets 連携</div>
+        <div class="admin-card">
+          <div class="admin-row" onclick="openApiSettings()">
+            <div class="admin-row-icon">🔗</div>
+            <div class="admin-row-body">
+              <div class="admin-row-title">API URL を設定</div>
+              <div class="admin-row-sub" id="apiStatusDesc">未設定（ローカル保存モード）</div>
+            </div>
+            <span class="admin-row-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">設定</div>
+        <div class="admin-card">
+          <div class="admin-row" onclick="openChangePIN()">
+            <div class="admin-row-icon">🔑</div>
+            <div class="admin-row-body">
+              <div class="admin-row-title">PINコードを変更</div>
+              <div class="admin-row-sub">管理者ログインPINの変更</div>
+            </div>
+            <span class="admin-row-arrow">›</span>
+          </div>
+          <div class="admin-row" onclick="resetAllData()">
+            <div class="admin-row-icon">🗑️</div>
+            <div class="admin-row-body">
+              <div class="admin-row-title">データをリセット</div>
+              <div class="admin-row-sub">お知らせ・設定を初期化</div>
+            </div>
+            <span class="admin-row-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#f8f3ee;border-radius:10px;padding:12px 14px;font-size:12px;color:#888;line-height:1.6;margin-bottom:24px;">
+        💡 ロゴを<strong>3回タップ</strong>すると管理パネルを開けます。<br>
+        デフォルトPIN：<strong>0000</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN NOTICE EDITOR ===== -->
+  <div class="admin-screen" id="adminNotice">
+    <div class="admin-hd">
+      <h2>📢 お知らせ管理</h2>
+      <button class="admin-close-btn" onclick="closeAdminNotice()">✕</button>
+    </div>
+    <div class="admin-body">
+      <button class="btn-save" onclick="openNoticeForm(null)" style="margin-bottom:16px;">＋ 新しいお知らせを追加</button>
+      <div id="adminNoticeList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN NOTICE FORM ===== -->
+  <div class="admin-screen" id="adminNoticeForm">
+    <div class="admin-hd">
+      <h2 id="noticeFormTitle">お知らせを追加</h2>
+      <button class="admin-close-btn" onclick="closeNoticeForm()">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="form-group">
+        <div class="form-label">日付・見出し</div>
+        <input class="form-input" type="text" id="nfDate" placeholder="例：2026年4月"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">タイトル</div>
+        <input class="form-input" type="text" id="nfTitle" placeholder="例：お休みのお知らせ"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">本文</div>
+        <textarea class="form-textarea" id="nfBody" placeholder="お知らせの内容を入力してください"></textarea>
+      </div>
+      <button class="btn-save" onclick="saveNotice()">保存する</button>
+      <button class="btn-cancel-form" onclick="closeNoticeForm()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN BOOKINGS ===== -->
+  <div class="admin-screen" id="adminBookings">
+    <div class="admin-hd">
+      <h2>📋 予約一覧</h2>
+      <button class="admin-close-btn" onclick="document.getElementById('adminBookings').classList.remove('open')">✕</button>
+    </div>
+    <div class="admin-body">
+      <div id="bookingsLoadingMsg" style="text-align:center;padding:30px;color:var(--text-sub);font-size:13px;">読み込み中...</div>
+      <div id="adminBookingList" class="booking-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN API SETTINGS ===== -->
+  <div class="admin-screen" id="adminApiSettings">
+    <div class="admin-hd">
+      <h2>🔗 Google Sheets 連携</h2>
+      <button class="admin-close-btn" onclick="document.getElementById('adminApiSettings').classList.remove('open')">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="api-setup-banner">
+        <h4>🔗 Google Apps Script URL</h4>
+        <p>デプロイしたGoogle Apps ScriptのURLを貼り付けると、予約データが自動でGoogleスプレッドシートに保存・同期されます。</p>
+        <input class="api-url-input" type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/..."/>
+        <button class="api-url-save-btn" onclick="saveApiUrl()">💾 URLを保存して接続</button>
+      </div>
+      <div style="background:#f8f4ee;border-radius:10px;padding:12px 14px;font-size:12px;color:#888;line-height:1.8;">
+        <strong style="color:var(--text)">設定手順：</strong><br>
+        1. Google スプレッドシートを新規作成<br>
+        2. 拡張機能 → Apps Script<br>
+        3. コード.gsの内容を貼り付け<br>
+        4. デプロイ → 新しいデプロイ → ウェブアプリ<br>
+        5. アクセス：<strong>全員</strong>に設定<br>
+        6. URLをここに貼り付け
+      </div>
+      <div style="margin-top:12px;padding:12px 14px;background:#fff;border-radius:10px;border:1px solid var(--border);">
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">現在の接続状態</div>
+        <div id="apiConnectStatus" style="font-size:12px;color:var(--text-sub);">未設定</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== ADMIN MENU EDITOR ===== -->
+  <div class="admin-screen" id="adminMenu">
+    <div class="admin-hd">
+      <h2>✂️ メニュー管理</h2>
+      <button class="admin-close-btn" onclick="closeAdminMenu()">✕</button>
+    </div>
+    <div class="admin-body">
+      <button class="btn-save" onclick="openMenuForm(null)" style="margin-bottom:16px;">＋ 新しいメニューを追加</button>
+      <div id="adminMenuList"></div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN MENU FORM ===== -->
+  <div class="admin-screen" id="adminMenuForm">
+    <div class="admin-hd">
+      <h2 id="menuFormTitle">メニューを追加</h2>
+      <button class="admin-close-btn" onclick="closeMenuForm()">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="form-group">
+        <div class="form-label">カテゴリ</div>
+        <select class="form-input" id="mfCat">
+          <option value="✂️ カット">✂️ カット</option>
+          <option value="🌀 パーマ">🌀 パーマ</option>
+          <option value="🎨 カラー">🎨 カラー</option>
+          <option value="💆 縮毛矯正・トリートメント">💆 縮毛矯正・トリートメント</option>
+          <option value="💇 その他">💇 その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">メニュー名</div>
+        <input class="form-input" type="text" id="mfName" placeholder="例：カット レディース"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">料金</div>
+        <input class="form-input" type="text" id="mfPrice" placeholder="例：¥5,280"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">所要時間（分）</div>
+        <input class="form-input" type="number" id="mfDuration" placeholder="例：60"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">備考（任意）</div>
+        <input class="form-input" type="text" id="mfNote" placeholder="例：小学6年生まで"/>
+      </div>
+      <button class="btn-save" onclick="saveMenuItem()">保存する</button>
+      <button class="btn-cancel-form" onclick="closeMenuForm()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN PIN CHANGE ===== -->
+  <div class="admin-screen" id="adminChangePIN">
+    <div class="admin-hd">
+      <h2>🔑 PIN変更</h2>
+      <button class="admin-close-btn" onclick="closeChangePIN()">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="form-group">
+        <div class="form-label">現在のPIN</div>
+        <input class="form-input" type="password" id="oldPIN" placeholder="現在の4桁PIN" maxlength="4" inputmode="numeric"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">新しいPIN（4桁）</div>
+        <input class="form-input" type="password" id="newPIN" placeholder="新しい4桁PIN" maxlength="4" inputmode="numeric"/>
+      </div>
+      <div class="form-group">
+        <div class="form-label">確認（もう一度）</div>
+        <input class="form-input" type="password" id="newPIN2" placeholder="新しいPINを再入力" maxlength="4" inputmode="numeric"/>
+      </div>
+      <button class="btn-save" onclick="changePIN()">PINを変更する</button>
+      <button class="btn-cancel-form" onclick="closeChangePIN()">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="showScreen('home')" data-nav="home">
+      <span class="nav-icon">🏠</span><span class="nav-label">ホーム</span>
+    </button>
+    <button class="nav-item" onclick="window.open('https://www.fhysics.com/book-online','_blank')" data-nav="booking">
+      <span class="nav-icon">📅</span><span class="nav-label">予約</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('menu')" data-nav="menu">
+      <span class="nav-icon">✂️</span><span class="nav-label">メニュー</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('staff')" data-nav="staff">
+      <span class="nav-icon">👤</span><span class="nav-label">スタッフ</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('access')" data-nav="access">
+      <span class="nav-icon">📍</span><span class="nav-label">アクセス</span>
+    </button>
+  </div>
+</div>
+
+<script>
+let currentScreen='home',screenHistory=[];
+let booking={svc:'',price:'',staff:'',date:'',time:''};
+let currentStep=1,selectedDate=null,calYear,calMonth;
+
+function showScreen(name){
+  const prev=document.getElementById('screen-'+currentScreen);
+  const next=document.getElementById('screen-'+name);
+  if(!next||currentScreen===name)return;
+  prev.classList.remove('active');prev.classList.add('slide-left');
+  setTimeout(()=>prev.classList.remove('slide-left'),350);
+  next.classList.add('active');
+  screenHistory.push(currentScreen);currentScreen=name;
+  updateNav(name);updateBackBtn();
+}
+function goBack(){
+  if(!screenHistory.length)return;
+  const prev=screenHistory.pop();
+  document.getElementById('screen-'+currentScreen).classList.remove('active');
+  document.getElementById('screen-'+prev).classList.add('active');
+  currentScreen=prev;updateNav(prev);updateBackBtn();
+}
+function updateNav(n){document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.nav===n));}
+function updateBackBtn(){document.getElementById('backBtn').style.visibility=screenHistory.length?'visible':'hidden';}
+
+function selectService(el,name,price,dur){
+  document.querySelectorAll('.svc-item').forEach(i=>i.classList.remove('sel'));
+  el.classList.add('sel');
+  booking.svc=name;
+  booking.price=price;
+  booking.durationMin = parseInt(dur) || 60; // 所要時間（分）を保存
+  document.getElementById('toStep2Btn').disabled=false;
+}
+function selectStaff(el,name,role){
+  document.querySelectorAll('.staff-card').forEach(i=>i.classList.remove('sel'));
+  el.classList.add('sel');booking.staff=name+' ('+role+')';
+  document.getElementById('toStep3Btn').disabled=false;
+}
+function goToStep(n){
+  document.getElementById('step'+currentStep).style.display='none';
+  document.getElementById('step'+n).style.display='block';
+  document.querySelectorAll('.step-item').forEach(s=>{
+    const sn=parseInt(s.dataset.step);
+    s.classList.remove('active','done');
+    if(sn<n)s.classList.add('done');else if(sn===n)s.classList.add('active');
+  });
+  if(n===3)renderCal();
+  if(n===4)renderConfirm();
+  currentStep=n;
+  document.getElementById('screen-booking').scrollTop=0;
+}
+
+function initCal(){const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();}
+function renderCal(){
+  if(calYear===undefined)initCal();
+  const now=new Date();now.setHours(0,0,0,0);
+  const minD=new Date(now);minD.setDate(now.getDate()+2);
+  const maxD=new Date(now);maxD.setMonth(now.getMonth()+2);
+  const mNames=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('calMonth').textContent=calYear+'年 '+mNames[calMonth];
+  const first=new Date(calYear,calMonth,1).getDay();
+  const daysInMo=new Date(calYear,calMonth+1,0).getDate();
+  const grid=document.getElementById('calDays');grid.innerHTML='';
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-d other';grid.appendChild(e);}
+  for(let d=1;d<=daysInMo;d++){
+    const e=document.createElement('div');
+    const dt=new Date(calYear,calMonth,d);const dow=dt.getDay();
+    let cls='cal-d';
+    if(dow===0)cls+=' sun';if(dow===6)cls+=' sat';
+    if(dt.getTime()===now.getTime())cls+=' today';
+    if(dt<minD||dt>maxD||dow===1)cls+=' dis'; // Monday closed
+    e.className=cls;e.textContent=d;
+    if(!cls.includes('dis'))e.addEventListener('click',()=>selectDate(e,dt));
+    if(selectedDate&&dt.getTime()===selectedDate.getTime())e.classList.add('sel');
+    grid.appendChild(e);
+  }
+}
+function selectDate(el,date){
+  document.querySelectorAll('.cal-d').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');selectedDate=date;
+  renderTimes();
+  document.getElementById('timeSection').style.display='block';
+  document.getElementById('toStep4Btn').disabled=true;
+  const days=['日','月','火','水','木','金','土'];
+  booking.date=date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日('+days[date.getDay()]+')';
+  booking.time='';
+}
+function renderTimes(){
+  const times=['10:30','11:30','12:30','13:30','14:30','15:30','16:30','17:30','18:30'];
+  const na=[2,5];
+  const grid=document.getElementById('timeGrid');grid.innerHTML='';
+  times.forEach((t,i)=>{
+    const e=document.createElement('div');
+    e.className=na.includes(i)?'t-slot na':'t-slot';
+    e.textContent=t;
+    if(!na.includes(i))e.addEventListener('click',()=>selTime(e,t));
+    grid.appendChild(e);
+  });
+}
+function selTime(el,t){
+  document.querySelectorAll('.t-slot').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');booking.time=t;
+  document.getElementById('toStep4Btn').disabled=false;
+}
+function changeMonth(d){
+  calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}
+  selectedDate=null;booking.date='';booking.time='';
+  document.getElementById('timeSection').style.display='none';
+  document.getElementById('toStep4Btn').disabled=true;renderCal();
+}
+function renderConfirm(){
+  document.getElementById('confSvc').textContent=booking.svc;
+  document.getElementById('confStaff').textContent=booking.staff;
+  document.getElementById('confDate').textContent=booking.date+' '+booking.time;
+  document.getElementById('confPrice').textContent=booking.price;
+}
+function confirmBooking(){
+  document.getElementById('succSvc').textContent=booking.svc;
+  document.getElementById('succStaff').textContent=booking.staff;
+  document.getElementById('succDate').textContent=booking.date+' '+booking.time;
+  document.getElementById('succId').textContent='PH-'+Math.floor(Math.random()*90000+10000);
+  showScreen('success');
+}
+function resetBooking(){
+  booking={svc:'',price:'',staff:'',date:'',time:''};selectedDate=null;currentStep=1;
+  ['step1','step2','step3','step4'].forEach((id,i)=>{document.getElementById(id).style.display=i===0?'block':'none';});
+  document.querySelectorAll('.step-item').forEach((el,i)=>{el.classList.remove('active','done');if(i===0)el.classList.add('active');});
+  document.querySelectorAll('.svc-item,.staff-card').forEach(el=>el.classList.remove('sel'));
+  ['toStep2Btn','toStep3Btn','toStep4Btn'].forEach(id=>document.getElementById(id).disabled=true);
+  screenHistory=[];showScreen('home');updateBackBtn();
+}
+initCal();
+
+// ============================================================
+// ===== ADMIN PANEL ===========================================
+// ============================================================
+
+// --- Default data ---
+// --- Default menu data (22 services from Wix) ---
+var DEFAULT_MENU = [
+  {id:1,cat:'✂️ カット',name:'カット レディース',price:'¥5,280',duration:60,note:''},
+  {id:2,cat:'✂️ カット',name:'フロントカット・部分カット',price:'¥1,100〜',duration:15,note:''},
+  {id:3,cat:'✂️ カット',name:'カット メンズ',price:'¥4,730',duration:55,note:''},
+  {id:4,cat:'✂️ カット',name:'カット スクール',price:'¥4,070',duration:45,note:''},
+  {id:5,cat:'✂️ カット',name:'カット ジュニア',price:'¥2,750',duration:45,note:'小学6年生まで'},
+  {id:6,cat:'🌀 パーマ',name:'パーマ＋シャンプー（レディース・メンズ）',price:'¥5,500〜',duration:80,note:'内容によって変わります'},
+  {id:7,cat:'🌀 パーマ',name:'パーマ＋カット',price:'¥10,230〜',duration:120,note:''},
+  {id:8,cat:'🌀 パーマ',name:'パーマ＋カラー＋カット',price:'¥15,730〜',duration:180,note:''},
+  {id:9,cat:'🎨 カラー',name:'カラー＋シャンプー（レディース・メンズ）',price:'¥5,500〜',duration:90,note:''},
+  {id:10,cat:'🎨 カラー',name:'カラー＋カット',price:'¥10,780〜',duration:120,note:'メンズ¥9,680'},
+  {id:11,cat:'🎨 カラー',name:'3Dカラー＋カラー＋カット',price:'¥14,080〜',duration:135,note:''},
+  {id:12,cat:'🎨 カラー',name:'2メイクカラー＋カット',price:'¥15,180〜',duration:150,note:''},
+  {id:13,cat:'🎨 カラー',name:'3メイクカラー＋カット',price:'¥20,130〜',duration:210,note:''},
+  {id:14,cat:'🎨 カラー',name:'カット＋カラー＋トリートメント',price:'¥14,080〜',duration:150,note:''},
+  {id:15,cat:'🎨 カラー',name:'カット＋カラー＋システムトリートメント',price:'¥15,180〜',duration:165,note:''},
+  {id:16,cat:'💆 縮毛矯正・トリートメント',name:'縮毛矯正前髪＋カット',price:'¥9,680',duration:90,note:''},
+  {id:17,cat:'💆 縮毛矯正・トリートメント',name:'縮毛矯正ハーフ＋カット',price:'¥11,880',duration:130,note:''},
+  {id:18,cat:'💆 縮毛矯正・トリートメント',name:'縮毛矯正全頭＋カット',price:'¥14,080〜',duration:180,note:''},
+  {id:19,cat:'💆 縮毛矯正・トリートメント',name:'トリートメント＋カット',price:'¥8,580〜',duration:90,note:''},
+  {id:20,cat:'💇 その他',name:'シャンプー＋ブロー',price:'¥2,750',duration:30,note:''},
+  {id:21,cat:'💇 その他',name:'ヘアセット',price:'¥3,300〜',duration:60,note:'ハーフアップ¥3,300/アップ¥4,400'},
+  {id:22,cat:'💇 その他',name:'眉カット',price:'¥550',duration:5,note:''}
+];
+
+// --- Render menu on public screen ---
+function fmtDur(m){
+  if(m>=60){ var h=Math.floor(m/60); var r=m%60; return r ? h+'時間'+r+'分' : h+'時間'; }
+  return m+'分';
+}
+
+function renderMenuScreen(){
+  var body = document.getElementById('menuBody');
+  if(!body) return;
+  var menu = adminData.menu;
+  var cats = [];
+  menu.forEach(function(m){ if(cats.indexOf(m.cat)===-1) cats.push(m.cat); });
+  body.innerHTML = cats.map(function(cat){
+    var items = menu.filter(function(m){ return m.cat===cat; });
+    return '<div class="menu-sec"><div class="menu-sec-title">'+cat+'</div>'+items.map(function(m){
+      var noteHtml = m.note ? ' <small style="color:var(--text-sub);font-size:11px;">／'+m.note+'</small>' : '';
+      return '<div class="menu-row"><span class="menu-name">'+m.name+noteHtml+' <small style="color:var(--text-sub);font-size:11px;">／'+fmtDur(m.duration)+'</small></span><span class="menu-price">'+m.price+'</span></div>';
+    }).join('')+'</div>';
+  }).join('');
+}
+
+
+const DEFAULT_NOTICES = [
+  {id:1, date:'2026年4月', title:'お休みのお知らせ', body:'7月6日〜9日木曜まで、中島は、夏休みをいただきます。よろしくお願いします。'},
+  {id:2, date:'2026年1月26日', title:'テレビに映りました。', body:'2026年1月26日テレビに映りました。ありがとうございます。'},
+  {id:3, date:'2025年7月', title:'おやすみのお知らせ', body:'7/20（火）、9/19〜10/25（土）、中島はお休みをいただきます。10/18（土）は、淀川花火のためお休みをいただきます。よろしくお願いします。'},
+  {id:4, date:'2026年7月1日より', title:'オンライン予約開始予定', body:'オンライン予約は2026年7月1日より開始予定です。現在テスト中のため予約はできません。ご予約はお電話またはメールにてお問い合わせください。'}
+];
+
+// --- LocalStorage helpers ---
+function saveData(key, val){ localStorage.setItem('physics_'+key, JSON.stringify(val)); }
+function loadData(key, def){ const v=localStorage.getItem('physics_'+key); return v?JSON.parse(v):def; }
+
+// --- Load all saved settings ---
+let adminData = {
+  pin:       loadData('pin', '0000'),
+  booking:   loadData('booking', false),
+  staff1:    loadData('staff1', true),
+  staff2:    loadData('staff2', true),
+  notices:   loadData('notices', DEFAULT_NOTICES),
+  nextId:    loadData('nextId', 10),
+  menu:      loadData('menu', DEFAULT_MENU)
+};
+
+// --- Apply settings on load ---
+function applySettings(){
+  // Booking toggle
+  document.getElementById('bookingToggle').checked = adminData.booking;
+  document.getElementById('bookingToggleDesc').textContent = adminData.booking ? '現在：受付中' : '現在：受付停止中';
+  // Booking banner in reservation screen
+  applyBookingBanner();
+  // Staff toggles
+  document.getElementById('staff1Toggle').checked = adminData.staff1;
+  document.getElementById('staff2Toggle').checked = adminData.staff2;
+  document.getElementById('staff1Desc').textContent = adminData.staff1 ? '予約受付中' : '休暇・休業中';
+  document.getElementById('staff2Desc').textContent = adminData.staff2 ? '予約受付中' : '休暇・休業中';
+  applyStaffCards();
+  // Notices
+  renderHomeNotices();
+  renderFullNotices();
+  renderMenuScreen();
+}
+
+function applyBookingBanner(){
+  // Show/hide booking closed message in reservation screen
+  let banner = document.getElementById('bookingClosedBanner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'bookingClosedBanner';
+    banner.className = 'booking-closed-banner';
+    banner.innerHTML = '<span style="font-size:20px">🚫</span><div><div style="font-size:14px;font-weight:800">現在、予約受付を停止しています</div><div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px">Tel: 080-9197-7625 までお問い合わせください</div></div>';
+    document.getElementById('step1').prepend(banner);
+  }
+  banner.classList.toggle('show', !adminData.booking);
+  // Disable/enable service items
+  document.querySelectorAll('.svc-item').forEach(el=>{
+    el.style.opacity = adminData.booking ? '1':'0.4';
+    el.style.pointerEvents = adminData.booking ? 'auto':'none';
+  });
+}
+
+function applyStaffCards(){
+  // Mark unavailable staff cards
+  const cards = document.querySelectorAll('.staff-card');
+  cards.forEach(card=>{
+    const nm = card.querySelector('.staff-nm')?.textContent || '';
+    const isKawato = nm.includes('川戸');
+    const isNakashima = nm.includes('中島');
+    if(isNakashima){
+      card.style.opacity = adminData.staff1 ? '1':'0.4';
+      card.style.pointerEvents = adminData.staff1 ? 'auto':'none';
+      const badge = card.querySelector('.staff-badge');
+      if(badge) badge.textContent = adminData.staff1 ? 'カット・カラー' : '休暇中';
+    }
+    if(isKawato){
+      card.style.opacity = adminData.staff2 ? '1':'0.4';
+      card.style.pointerEvents = adminData.staff2 ? 'auto':'none';
+      const badge = card.querySelector('.staff-badge');
+      if(badge) badge.textContent = adminData.staff2 ? 'パーマ・カラー' : '休暇中';
+    }
+  });
+}
+
+// --- Render notices in Home screen ---
+function renderHomeNotices(){
+  const list = document.querySelector('#screen-home .notice-list');
+  if(!list) return;
+  const notices = adminData.notices.slice(0,3);
+  list.innerHTML = notices.map(n=>`
+    <div class="notice-item" onclick="showScreen('notice')">
+      <div class="notice-date">${n.date}</div>
+      <div class="notice-title">${n.title}</div>
+      <div class="notice-body">${n.body}</div>
+    </div>`).join('');
+}
+
+// --- Render notices in Notice screen ---
+function renderFullNotices(){
+  const list = document.querySelector('#screen-notice .notice-full-list');
+  if(!list) return;
+  list.innerHTML = adminData.notices.map(n=>`
+    <div class="nf-item">
+      <div class="nf-date">${n.date}</div>
+      <div class="nf-title">${n.title}</div>
+      <div class="nf-body">${n.body}</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// === LOGO TAP → ADMIN ACCESS ================================
+// ============================================================
+let tapCount=0, tapTimer=null;
+function logoTap(){
+  tapCount++;
+  var hint = document.getElementById('logoTapHint');
+  var remain = 3 - tapCount;
+  if(remain > 0){
+    hint.textContent = 'あと'+remain+'回';
+    hint.classList.add('show');
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(function(){ tapCount=0; hint.classList.remove('show'); }, 2000);
+  } else {
+    tapCount=0; hint.classList.remove('show');
+    clearTimeout(tapTimer);
+    openAdminModal();
+  }
+}
+(function(){
+  var el = document.getElementById('adminLogoTap');
+  if(el){ el.addEventListener('click', function(){ logoTap(); }); }
+})();
+
+// ============================================================
+// === PIN MODAL ==============================================
+// ============================================================
+let pinEntry='';
+function openAdminModal(){
+  pinEntry='';updatePinDots();
+  document.getElementById('adminModal').classList.add('open');
+}
+function closeAdminModal(){
+  pinEntry='';updatePinDots();
+  document.getElementById('adminModal').classList.remove('open');
+}
+function pinInput(d){
+  if(pinEntry.length>=4) return;
+  pinEntry+=d; updatePinDots();
+  if(pinEntry.length===4){
+    setTimeout(()=>{
+      if(pinEntry===adminData.pin){
+        closeAdminModal();
+        openAdmin();
+      } else {
+        // Wrong PIN — flash red
+        for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.add('error');
+        setTimeout(()=>{
+          for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.remove('error');
+          pinEntry=''; updatePinDots();
+        }, 700);
+      }
+    }, 120);
+  }
+}
+function pinDelete(){ pinEntry=pinEntry.slice(0,-1); updatePinDots(); }
+function updatePinDots(){
+  for(let i=0;i<4;i++){
+    const dot=document.getElementById('pd'+i);
+    dot.classList.toggle('filled', i<pinEntry.length);
+    dot.classList.remove('error');
+  }
+}
+
+// ============================================================
+// === ADMIN SCREENS ==========================================
+// ============================================================
+function openAdmin(){
+  applySettings();
+  document.getElementById('adminMain').classList.add('open');
+}
+function closeAdmin(){
+  document.getElementById('adminMain').classList.remove('open');
+  document.getElementById('adminNotice').classList.remove('open');
+  document.getElementById('adminNoticeForm').classList.remove('open');
+  document.getElementById('adminChangePIN').classList.remove('open');
+  document.getElementById('adminMenu').classList.remove('open');
+  document.getElementById('adminMenuForm').classList.remove('open');
+}
+
+// --- Booking toggle ---
+function toggleBooking(){
+  adminData.booking = document.getElementById('bookingToggle').checked;
+  document.getElementById('bookingToggleDesc').textContent = adminData.booking ? '現在：受付中' : '現在：受付停止中';
+  saveData('booking', adminData.booking);
+  applyBookingBanner();
+  showToast(adminData.booking ? '✅ 予約受付を開始しました' : '🚫 予約受付を停止しました');
+}
+
+// --- Staff toggle ---
+function toggleStaff(n){
+  const key = 'staff'+n;
+  adminData[key] = document.getElementById(key+'Toggle').checked;
+  document.getElementById(key+'Desc').textContent = adminData[key] ? '予約受付中' : '休暇・休業中';
+  saveData(key, adminData[key]);
+  applyStaffCards();
+  const names = {1:'中島 康生', 2:'川戸 順子'};
+  showToast(adminData[key] ? '✅ '+names[n]+'：受付再開' : '🚫 '+names[n]+'：休暇設定');
+}
+
+// --- Notice management ---
+let editNoticeId = null;
+function openAdminNotice(){
+  renderAdminNoticeList();
+  document.getElementById('adminNotice').classList.add('open');
+}
+function closeAdminNotice(){ document.getElementById('adminNotice').classList.remove('open'); }
+
+function renderAdminNoticeList(){
+  const list = document.getElementById('adminNoticeList');
+  if(!adminData.notices.length){
+    list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-sub);font-size:14px;">お知らせはありません</div>';
+    return;
+  }
+  list.innerHTML = adminData.notices.map(n=>`
+    <div class="notice-edit-item">
+      <div class="notice-edit-date">${n.date}</div>
+      <div class="notice-edit-title">${n.title}</div>
+      <div class="notice-edit-body">${n.body}</div>
+      <div class="notice-edit-actions">
+        <button class="btn-edit" onclick="openNoticeForm(${n.id})">✏️ 編集</button>
+        <button class="btn-del" onclick="deleteNotice(${n.id})">🗑️ 削除</button>
+      </div>
+    </div>`).join('');
+}
+
+function openNoticeForm(id){
+  editNoticeId = id;
+  if(id){
+    const n = adminData.notices.find(x=>x.id===id);
+    document.getElementById('noticeFormTitle').textContent = 'お知らせを編集';
+    document.getElementById('nfDate').value = n.date;
+    document.getElementById('nfTitle').value = n.title;
+    document.getElementById('nfBody').value = n.body;
+  } else {
+    document.getElementById('noticeFormTitle').textContent = 'お知らせを追加';
+    document.getElementById('nfDate').value='';
+    document.getElementById('nfTitle').value='';
+    document.getElementById('nfBody').value='';
+  }
+  document.getElementById('adminNoticeForm').classList.add('open');
+}
+function closeNoticeForm(){ document.getElementById('adminNoticeForm').classList.remove('open'); }
+
+function saveNotice(){
+  const date = document.getElementById('nfDate').value.trim();
+  const title = document.getElementById('nfTitle').value.trim();
+  const body = document.getElementById('nfBody').value.trim();
+  if(!title){ alert('タイトルを入力してください'); return; }
+  if(editNoticeId){
+    const n = adminData.notices.find(x=>x.id===editNoticeId);
+    n.date=date; n.title=title; n.body=body;
+    showToast('✅ お知らせを更新しました');
+  } else {
+    adminData.notices.unshift({id: adminData.nextId++, date, title, body});
+    saveData('nextId', adminData.nextId);
+    showToast('✅ お知らせを追加しました');
+  }
+  saveData('notices', adminData.notices);
+  renderHomeNotices();
+  renderFullNotices();
+  renderAdminNoticeList();
+  closeNoticeForm();
+}
+
+function deleteNotice(id){
+  if(!confirm('このお知らせを削除しますか？')) return;
+  adminData.notices = adminData.notices.filter(n=>n.id!==id);
+  saveData('notices', adminData.notices);
+  renderHomeNotices();
+  renderFullNotices();
+  renderAdminNoticeList();
+  showToast('🗑️ 削除しました');
+}
+
+// --- PIN change ---
+function openChangePIN(){
+  document.getElementById('oldPIN').value='';
+  document.getElementById('newPIN').value='';
+  document.getElementById('newPIN2').value='';
+  document.getElementById('adminChangePIN').classList.add('open');
+}
+function closeChangePIN(){ document.getElementById('adminChangePIN').classList.remove('open'); }
+function changePIN(){
+  const old = document.getElementById('oldPIN').value;
+  const n1  = document.getElementById('newPIN').value;
+  const n2  = document.getElementById('newPIN2').value;
+  if(old !== adminData.pin){ alert('現在のPINが正しくありません'); return; }
+  if(!/^\d{4}$/.test(n1)){ alert('PINは4桁の数字で入力してください'); return; }
+  if(n1 !== n2){ alert('新しいPINが一致しません'); return; }
+  adminData.pin = n1;
+  saveData('pin', adminData.pin);
+  showToast('🔑 PINを変更しました');
+  closeChangePIN();
+}
+
+
+
+// --- Render menu on public screen ---
+function fmtDur(m){
+  if(m>=60){ var h=Math.floor(m/60); var r=m%60; return r ? h+'時間'+r+'分' : h+'時間'; }
+  return m+'分';
+}
+
+function renderMenuScreen(){
+  var body = document.getElementById('menuBody');
+  if(!body) return;
+  var menu = adminData.menu;
+  var cats = [];
+  menu.forEach(function(m){ if(cats.indexOf(m.cat)===-1) cats.push(m.cat); });
+  body.innerHTML = cats.map(function(cat){
+    var items = menu.filter(function(m){ return m.cat===cat; });
+    return '<div class="menu-sec"><div class="menu-sec-title">'+cat+'</div>'+items.map(function(m){
+      var noteHtml = m.note ? ' <small style="color:var(--text-sub);font-size:11px;">／'+m.note+'</small>' : '';
+      return '<div class="menu-row"><span class="menu-name">'+m.name+noteHtml+' <small style="color:var(--text-sub);font-size:11px;">／'+fmtDur(m.duration)+'</small></span><span class="menu-price">'+m.price+'</span></div>';
+    }).join('')+'</div>';
+  }).join('');
+}
+
+// --- Admin menu editor ---
+var editMenuId = null;
+var menuNextId = 100;
+
+function openAdminMenu(){
+  renderAdminMenuList();
+  document.getElementById('adminMenu').classList.add('open');
+}
+function closeAdminMenu(){ document.getElementById('adminMenu').classList.remove('open'); }
+
+function renderAdminMenuList(){
+  var list = document.getElementById('adminMenuList');
+  var menu = adminData.menu;
+  if(!menu.length){
+    list.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-sub);font-size:14px;">メニューはありません</div>';
+    return;
+  }
+  var cats = [];
+  menu.forEach(function(m){ if(cats.indexOf(m.cat)===-1) cats.push(m.cat); });
+  list.innerHTML = cats.map(function(cat){
+    var items = menu.filter(function(m){ return m.cat===cat; });
+    return '<div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:8px;">'+cat+'</div>'+items.map(function(m){
+      return '<div class="notice-edit-item"><div class="notice-edit-title">'+m.name+'</div><div class="notice-edit-body">'+m.price+' ／ '+fmtDur(m.duration)+(m.note?' ／ '+m.note:'')+'</div><div class="notice-edit-actions"><button class="btn-edit" onclick="openMenuForm('+m.id+')">✏️ 編集</button><button class="btn-del" onclick="deleteMenuItem('+m.id+')">🗑️ 削除</button></div></div>';
+    }).join('')+'</div>';
+  }).join('');
+}
+
+function openMenuForm(id){
+  editMenuId = id;
+  if(id){
+    var m = adminData.menu.filter(function(x){ return x.id===id; })[0];
+    if(!m) return;
+    document.getElementById('menuFormTitle').textContent = 'メニューを編集';
+    document.getElementById('mfCat').value = m.cat;
+    document.getElementById('mfName').value = m.name;
+    document.getElementById('mfPrice').value = m.price;
+    document.getElementById('mfDuration').value = m.duration;
+    document.getElementById('mfNote').value = m.note || '';
+  } else {
+    document.getElementById('menuFormTitle').textContent = 'メニューを追加';
+    document.getElementById('mfCat').value = '✂️ カット';
+    document.getElementById('mfName').value = '';
+    document.getElementById('mfPrice').value = '';
+    document.getElementById('mfDuration').value = '';
+    document.getElementById('mfNote').value = '';
+  }
+  document.getElementById('adminMenuForm').classList.add('open');
+}
+function closeMenuForm(){ document.getElementById('adminMenuForm').classList.remove('open'); }
+
+function saveMenuItem(){
+  var cat = document.getElementById('mfCat').value;
+  var name = document.getElementById('mfName').value.trim();
+  var price = document.getElementById('mfPrice').value.trim();
+  var duration = parseInt(document.getElementById('mfDuration').value) || 60;
+  var note = document.getElementById('mfNote').value.trim();
+  if(!name){ alert('メニュー名を入力してください'); return; }
+  if(!price){ alert('料金を入力してください'); return; }
+  if(editMenuId){
+    var m = adminData.menu.filter(function(x){ return x.id===editMenuId; })[0];
+    if(m){ m.cat=cat; m.name=name; m.price=price; m.duration=duration; m.note=note; }
+    showToast('✅ メニューを更新しました');
+  } else {
+    adminData.menu.push({id:menuNextId++, cat:cat, name:name, price:price, duration:duration, note:note});
+    showToast('✅ メニューを追加しました');
+  }
+  saveData('menu', adminData.menu);
+  renderMenuScreen();
+  renderAdminMenuList();
+  closeMenuForm();
+}
+
+function deleteMenuItem(id){
+  if(!confirm('このメニューを削除しますか？')) return;
+  adminData.menu = adminData.menu.filter(function(m){ return m.id!==id; });
+  saveData('menu', adminData.menu);
+  renderMenuScreen();
+  renderAdminMenuList();
+  showToast('🗑️ 削除しました');
+}
+
+// --- Reset ---
+function resetAllData(){
+  if(!confirm('すべてのデータを初期化しますか？\n（お知らせ・設定がリセットされます）')) return;
+  ['pin','booking','staff1','staff2','notices','nextId','menu'].forEach(k=>localStorage.removeItem('physics_'+k));
+  adminData = {
+    pin:'0000', booking:false, staff1:true, staff2:true,
+    notices:[...DEFAULT_NOTICES], nextId:10,
+    menu:DEFAULT_MENU.slice()
+  };
+  applySettings();
+  showToast('🔄 データをリセットしました');
+}
+
+// --- Toast notification ---
+function showToast(msg){
+  let t = document.getElementById('adminToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id='adminToast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:9999;transition:transform 0.3s;white-space:nowrap;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>{ t.style.transform='translateX(-50%) translateY(60px)'; },2500);
+}
+
+// ============================================================
+// ===== GOOGLE SHEETS API 連携 ================================
+// ============================================================
+
+let API_URL = loadData('apiUrl', '');
+
+function saveApiUrl(){
+  const url = document.getElementById('apiUrlInput').value.trim();
+  if(!url){ alert('URLを入力してください'); return; }
+  if(!url.startsWith('https://script.google.com')){
+    alert('Google Apps Script のURLを入力してください\n（https://script.google.com/... で始まるURL）');
+    return;
+  }
+  if(!url.includes('/exec')){
+    const ok = confirm('⚠️ URLに /exec が含まれていません。\n\nデプロイURLは通常\nhttps://script.google.com/macros/s/.../exec\nという形式です。\n\nこのまま保存しますか？');
+    if(!ok) return;
+  }
+  API_URL = url;
+  saveData('apiUrl', url);
+  updateApiStatus();
+  showToast('✅ URLを保存しました。接続テスト中...');
+  testApiConnection();
+}
+
+function updateApiStatus(){
+  const el = document.getElementById('apiStatusDesc');
+  const cs = document.getElementById('apiConnectStatus');
+  if(API_URL){
+    if(el) el.textContent = '接続済み（Google Sheets）';
+    if(cs) cs.innerHTML = '<span style="color:#2d6a4f;font-weight:700;">✅ 接続済み</span><br><span style="font-size:11px;word-break:break-all;">'+API_URL.substring(0,60)+'...</span>';
+    document.getElementById('apiUrlInput') && (document.getElementById('apiUrlInput').value = API_URL);
+  } else {
+    if(el) el.textContent = '未設定（ローカル保存モード）';
+    if(cs) cs.textContent = '未設定';
+  }
+}
+
+async function testApiConnection(){
+  if(!API_URL) return;
+  try{
+    const res = await fetch(API_URL + '?action=settings');
+    const data = await res.json();
+    if(data && !data.error){
+      showToast('✅ Google Sheets に接続しました！');
+      // サーバーから設定を読み込む
+      syncSettingsFromServer(data);
+    } else {
+      showToast('⚠️ 接続エラー：' + (data.error||'不明'));
+    }
+  } catch(e){
+    showToast('⚠️ 接続テスト失敗。URLは保存済みです。\nデプロイ時に「承認」が必要かもしれません。');
+  }
+}
+
+function syncSettingsFromServer(data){
+  if(data.booking !== undefined) adminData.booking = data.booking === true || data.booking === 'true';
+  if(data.staff1  !== undefined) adminData.staff1  = data.staff1  === true || data.staff1  === 'true';
+  if(data.staff2  !== undefined) adminData.staff2  = data.staff2  === true || data.staff2  === 'true';
+  applySettings();
+}
+
+// API経由で設定を保存
+async function saveSettingsToServer(settings){
+  if(!API_URL) return;
+  try{
+    await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'updateSettings', settings })
+    });
+  } catch(e){ /* サイレント */ }
+}
+
+// API経由でお知らせを保存
+async function saveNoticesToServer(){
+  if(!API_URL) return;
+  try{
+    await fetch(API_URL, {
+      method:'POST',
+      body: JSON.stringify({ action:'saveNotices', notices: adminData.notices })
+    });
+  } catch(e){ /* サイレント */ }
+}
+
+// ---- 時間帯の可用性をサーバーから取得 ----
+async function fetchAvailability(dateStr, staffName){
+  if(!API_URL) return [];
+  try{
+    const res = await fetch(`${API_URL}?action=availability&date=${dateStr}&staff=${encodeURIComponent(staffName)}`);
+    const data = await res.json();
+    return data.bookedSlots || [];
+  } catch(e){ return []; }
+}
+
+// ---- API URL 設定画面 ----
+function openApiSettings(){
+  updateApiStatus();
+  document.getElementById('adminApiSettings').classList.add('open');
+}
+
+// ---- 予約一覧画面 ----
+async function openAdminBookings(){
+  document.getElementById('adminBookings').classList.add('open');
+  document.getElementById('bookingsLoadingMsg').style.display = 'block';
+  document.getElementById('adminBookingList').innerHTML = '';
+
+  if(!API_URL){
+    document.getElementById('bookingsLoadingMsg').textContent = 'Google Sheets に接続するとここに予約一覧が表示されます。先にAPI URLを設定してください。';
+    return;
+  }
+  try{
+    const res  = await fetch(`${API_URL}?action=bookings`);
+    const data = await res.json();
+    document.getElementById('bookingsLoadingMsg').style.display = 'none';
+    renderAdminBookings(data.bookings || []);
+  } catch(e){
+    document.getElementById('bookingsLoadingMsg').textContent = '読み込みに失敗しました。';
+  }
+}
+
+function renderAdminBookings(bookings){
+  const list = document.getElementById('adminBookingList');
+  if(!bookings.length){
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-sub);font-size:14px;">予約はありません</div>';
+    return;
+  }
+  list.innerHTML = bookings.map(b => `
+    <div class="bk-item">
+      <div class="bk-item-hd">
+        <span class="bk-id">${b['ID']||''}</span>
+        <span class="bk-status">確定</span>
+      </div>
+      <div class="bk-rows">
+        <div class="bk-row"><span class="bk-label">日時</span><span class="bk-val">${b['予約日']||''} ${b['予約時間']||''}</span></div>
+        <div class="bk-row"><span class="bk-label">サービス</span><span class="bk-val">${b['サービス']||''}</span></div>
+        <div class="bk-row"><span class="bk-label">担当者</span><span class="bk-val">${b['担当者']||''}</span></div>
+        <div class="bk-row"><span class="bk-label">お名前</span><span class="bk-val">${b['お名前']||'—'}</span></div>
+        <div class="bk-row"><span class="bk-label">電話</span><span class="bk-val">${b['電話番号']||'—'}</span></div>
+      </div>
+      <button class="bk-cancel-btn" onclick="cancelBookingAdmin('${b['ID']}')">キャンセルする</button>
+    </div>`).join('');
+}
+
+async function cancelBookingAdmin(id){
+  if(!confirm('この予約をキャンセルしますか？\n予約ID: '+id)) return;
+  try{
+    const res  = await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'cancelBooking', id }) });
+    const data = await res.json();
+    if(data.success){
+      showToast('✅ キャンセルしました');
+      openAdminBookings();
+    } else {
+      showToast('⚠️ ' + (data.error||'エラーが発生しました'));
+    }
+  } catch(e){ showToast('⚠️ 通信エラー'); }
+}
+
+// ============================================================
+// renderTimes を上書き（空き枠をAPIから取得）
+// ============================================================
+const ALL_TIMES = ['10:30','11:30','12:30','13:30','14:30','15:30','16:30','17:30','18:30'];
+
+async function fetchAndRenderTimes(dateStr){
+  const grid = document.getElementById('timeGrid');
+  // ローディング表示
+  document.getElementById('timeSection').style.display = 'block';
+  grid.innerHTML = ALL_TIMES.map(()=>`<div class="t-slot na" style="opacity:0.4;">...</div>`).join('');
+
+  let bookedSlots = [];
+  if(API_URL){
+    bookedSlots = await fetchAvailability(dateStr, booking.staff);
+  } else {
+    // API未設定時はlocalStorageから取得
+    bookedSlots = getLocalBookedSlots(dateStr, booking.staff);
+  }
+  renderTimesWithBooked(bookedSlots);
+}
+
+function renderTimesWithBooked(bookedSlots){
+  const grid = document.getElementById('timeGrid');
+  grid.innerHTML = '';
+  const slotsNeeded = Math.ceil((booking.durationMin || 60) / 60);
+
+  ALL_TIMES.forEach((t, idx) => {
+    const e = document.createElement('div');
+    // 必要な連続スロットが全て空いているか確認
+    let isAvailable = true;
+    for(let i = 0; i < slotsNeeded; i++){
+      if(idx + i >= ALL_TIMES.length || bookedSlots.includes(ALL_TIMES[idx + i])){
+        isAvailable = false;
+        break;
+      }
+    }
+    const isBooked = !isAvailable;
+    e.className = isBooked ? 't-slot na' : 't-slot';
+    e.textContent = isBooked ? t+' 埋' : t;
+    if(!isBooked) e.addEventListener('click', ()=>selTime(e, t));
+    grid.appendChild(e);
+  });
+}
+
+// ============================================================
+// confirmBooking をAPI対応に上書き
+// ============================================================
+async function confirmBooking(){
+  const name  = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const note  = document.getElementById('custNote').value.trim();
+
+  if(!name){  alert('お名前を入力してください'); return; }
+  if(!phone){ alert('電話番号を入力してください'); return; }
+
+  // ローディング表示
+  document.getElementById('step4Loading').classList.add('show');
+
+  const dateISO = selectedDate
+    ? selectedDate.getFullYear()+'-'+String(selectedDate.getMonth()+1).padStart(2,'0')+'-'+String(selectedDate.getDate()).padStart(2,'0')
+    : '';
+
+  let bookingId = 'PH-' + Math.floor(Math.random()*90000+10000);
+
+  // 所要時間に応じた全スロットを計算
+  const slotsNeeded = Math.ceil((booking.durationMin || 60) / 60);
+  const startIdx = ALL_TIMES.indexOf(booking.time);
+  const allSlots = ALL_TIMES.slice(startIdx, startIdx + slotsNeeded);
+
+  if(API_URL){
+    try{
+      const res  = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action:   'addBooking',
+          date:     dateISO,
+          time:     booking.time,
+          allSlots: allSlots,
+          duration: booking.durationMin || 60,
+          service:  booking.svc,
+          staff:    booking.staff,
+          name,
+          phone,
+          note
+        })
+      });
+      const data = await res.json();
+      if(!data.success){
+        document.getElementById('step4Loading').classList.remove('show');
+        alert('⚠️ ' + (data.error || '予約に失敗しました。もう一度お試しください。'));
+        return;
+      }
+      bookingId = data.id || bookingId;
+    } catch(e){
+      document.getElementById('step4Loading').classList.remove('show');
+      alert('通信エラーが発生しました。電話にてご予約ください。\nTel: 080-9197-7625');
+      return;
+    }
+  } else {
+    // API未設定時: localStorageでダブルブッキング防止
+    const localBooked = getLocalBookedSlots(dateISO, booking.staff);
+    const conflict = allSlots.some(s => localBooked.includes(s));
+    if(conflict){
+      document.getElementById('step4Loading').classList.remove('show');
+      alert('⚠️ この時間帯はすでに予約済みです。別の時間をお選びください。');
+      return;
+    }
+    allSlots.forEach(s => saveLocalBooking(dateISO, s, booking.staff, bookingId));
+  }
+
+  document.getElementById('step4Loading').classList.remove('show');
+  document.getElementById('succSvc').textContent   = booking.svc;
+  document.getElementById('succStaff').textContent = booking.staff;
+  document.getElementById('succDate').textContent  = booking.date + ' ' + booking.time;
+  document.getElementById('succId').textContent    = bookingId;
+  showScreen('success');
+}
+
+// ============================================================
+// toggleBooking / toggleStaff をAPI対応に上書き
+// ============================================================
+function toggleBooking(){
+  adminData.booking = document.getElementById('bookingToggle').checked;
+  document.getElementById('bookingToggleDesc').textContent = adminData.booking ? '現在：受付中' : '現在：受付停止中';
+  saveData('booking', adminData.booking);
+  saveSettingsToServer({ booking: adminData.booking });
+  applyBookingBanner();
+  showToast(adminData.booking ? '✅ 予約受付を開始しました' : '🚫 予約受付を停止しました');
+}
+
+function toggleStaff(n){
+  const key = 'staff'+n;
+  adminData[key] = document.getElementById(key+'Toggle').checked;
+  document.getElementById(key+'Desc').textContent = adminData[key] ? '予約受付中' : '休暇・休業中';
+  saveData(key, adminData[key]);
+  saveSettingsToServer({ [key]: adminData[key] });
+  applyStaffCards();
+  const names = {1:'中島 康生', 2:'川戸 順子'};
+  showToast(adminData[key] ? '✅ '+names[n]+'：受付再開' : '🚫 '+names[n]+'：休暇設定');
+}
+
+// お知らせ保存もAPI連携
+const _origSaveNotice = saveNotice;
+
+// selectDate を API対応に上書き
+function selectDate(el, date){
+  document.querySelectorAll('.cal-d').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedDate = date;
+  document.getElementById('toStep4Btn').disabled = true;
+  const days = ['日','月','火','水','木','金','土'];
+  booking.date = date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日('+days[date.getDay()]+')';
+  booking.time = '';
+
+  const dateISO = date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+  fetchAndRenderTimes(dateISO);
+}
+
+// ============================================================
+// ローカル予約管理（API未接続時のダブルブッキング防止）
+// ============================================================
+function getLocalBookings(){
+  try{ return JSON.parse(localStorage.getItem('localBookings') || '[]'); }
+  catch(e){ return []; }
+}
+
+function saveLocalBooking(date, time, staff, id){
+  const bookings = getLocalBookings();
+  bookings.push({ date, time, staff, id, createdAt: new Date().toISOString() });
+  localStorage.setItem('localBookings', JSON.stringify(bookings));
+}
+
+function getLocalBookedSlots(date, staff){
+  const bookings = getLocalBookings();
+  return bookings
+    .filter(b => b.date === date && (!staff || staff === 'おまかせ (どなたでも可)' || b.staff === staff || b.staff === 'おまかせ (どなたでも可)'))
+    .map(b => b.time);
+}
+
+// 初期化時にAPI URLを反映
+if(API_URL){ updateApiStatus(); }
+
+// --- Init ---
+applySettings();
+</script>
+</body>
+</html>
